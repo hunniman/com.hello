@@ -1,7 +1,24 @@
 $(function() {
 	
+	var i=0;
 	
-	 $('.progress .progress-bar').progressbar({display_text: 'center', use_percentage: false, amount_format: function(p, max, min) {return '速度: ' + min + '   已上传: ' + p }});
+	 $('.progress .progress-bar').progressbar({
+		 display_text: 'center', 
+		 use_percentage: false, 
+		 amount_format: function(speed,p) {return '速度: ' + speed + '   已上传: ' + speed }
+	 });
+	 
+	
+	var int= setInterval(function(){
+		 $('.progress .progress-bar').attr("data-transitiongoal",i+=10).progressbar();
+		 if(i>=100){
+			 window.clearInterval(int);
+		 }
+	 },1000);
+	 
+	 $('.progress .progress-bar').update(a,b)
+	 
+	 
 	
 	var jcrop_api,
 	  boundx,
