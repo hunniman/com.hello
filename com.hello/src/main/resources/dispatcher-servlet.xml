@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<beans xmlns="http://www.springframework.org/schema/beans"   
+       xmlns:aop="http://www.springframework.org/schema/aop"   
+       xmlns:context="http://www.springframework.org/schema/context"  
+       xmlns:mvc="http://www.springframework.org/schema/mvc"   
+       xmlns:tx="http://www.springframework.org/schema/tx"   
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+       xsi:schemaLocation="http://www.springframework.org/schema/aop   
+        http://www.springframework.org/schema/aop/spring-aop-4.0.xsd   
+        http://www.springframework.org/schema/beans   
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd   
+        http://www.springframework.org/schema/context   
+        http://www.springframework.org/schema/context/spring-context-4.0.xsd   
+        http://www.springframework.org/schema/mvc   
+        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd   
+        http://www.springframework.org/schema/tx   
+        http://www.springframework.org/schema/tx/spring-tx-4.0.xsd">  
+
+	<mvc:default-servlet-handler />
+	
+	<mvc:resources location="/resource/js/" mapping="/resource/js/**"/>
+	<mvc:resources location="/resource/css/" mapping="/resource/css/**"/>
+	<mvc:resources location="/resource/image/" mapping="/resource/image/**"/>
+	<mvc:resources location="/resource/ueditor/" mapping="/resource/ueditor/**"/>
+	<mvc:resources location="/resource/upload/" mapping="/resource/upload/**"/>
+	<mvc:resources location="/resource/front/" mapping="/resource/front/**"/>
+ 	<mvc:resources location="/resource/bootstrap-3.3.5-dist/css/" mapping="/resource/bootstrap-3.3.5-dist/css/**"/>
+ 	<mvc:resources location="/resource/bootstrap-3.3.5-dist/js/" mapping="/resource/bootstrap-3.3.5-dist/js/**"/>
+ 	<mvc:resources location="/cacheUpload/" mapping="/cacheUpload/**"/>
+  
+  
+    <!-- SpringMVC上传文件时,需配置MultipartResolver处理器 -->
+    <bean id="multipartResolver" class="com.hello.controller.CustomMultipartResolver">
+        <!-- 指定所上传文件的总大小不能超过800KB......注意maxUploadSize属性的限制不是针对单个文件,而是所有文件的容量之和 -->
+        <property name="maxUploadSize" value="80000000"/>
+    </bean>
+     
+    <!-- SpringMVC在超出上传文件限制时,会抛出org.springframework.web.multipart.MaxUploadSizeExceededException -->
+    <!-- 该异常是SpringMVC在检查上传的文件信息时抛出来的,而且此时还没有进入到Controller方法中 -->
+    <bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="exceptionMappings">
+            <props>
+                <!-- 遇到MaxUploadSizeExceededException异常时,自动跳转到/WEB-INF/jsp/error_fileupload.jsp页面 -->
+                <prop key="org.springframework.web.multipart.MaxUploadSizeExceededException">error_fileupload</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">  
+        <property name="prefix" value="/" />  
+        <property name="suffix" value=".jsp" />  
+    </bean>  
+</beans>  
