@@ -1,48 +1,45 @@
 $(function() {
 	
 	
+	 $('.progress .progress-bar').progressbar({display_text: 'center', use_percentage: false, amount_format: function(p, max, min) {return '速度: ' + min + '   已上传: ' + p }});
+	
 	var jcrop_api,
 	  boundx,
-	  boundy,
+	  boundy;
 	  
 	  // Grab some information about the preview pane
-	  $preview = $('#preview-pane'),
-	  $pimg = $('#targetPre');
 	  
 //	  console.log('init',[xsize,ysize]);
 
+	
 	  $('#target').Jcrop({
-	    onChange: updatePreview,
-	    onSelect: updatePreview,
+	    onChange: showPreview,
+	    onSelect: showPreview,
 	    aspectRatio: 1,
 	    minSize:[100,100],
-	    allowResize:false
+	    allowResize:false,
+	    allowSelect:false
 	  },function(){
-	    // Use the API to get the real image size
-	    var bounds = this.getBounds();
-	    boundx = bounds[0];
-	    boundy = bounds[1];
-	    // Store the API in the jcrop_api variable
-	    jcrop_api = this;
-	    
-	    // Move the preview into the jcrop container for css positioning
-	    $preview.appendTo(jcrop_api.ui.holder);
+	      jcrop_api = this;
+	      jcrop_api.animateTo([50, 50, 100, 100]);
 	  });
 	  
-	  function updatePreview(c){
-	    if (parseInt(c.w) > 0) {
-	      var rx = xsize / c.w;
-	      var ry = ysize / c.h;
-	      
-	      $pimg.css({
-	        width: Math.round(rx * boundx) + 'px',
-	        height: Math.round(ry * boundy) + 'px',
-	        marginLeft: '-' + Math.round(rx * c.x) + 'px',
-	        marginTop: '-' + Math.round(ry * c.y) + 'px'
-	      });
+	  var $preview = $('#preview');
+	  function showPreview(coords)
+	  {
+	    if (parseInt(coords.w) > 0)
+	    {
+	      var rx = 100 / coords.w;
+	      var ry = 100 / coords.h;
+
+	      $preview.css({
+	        width: Math.round(rx * 558) + 'px',
+	        height: Math.round(ry * 790) + 'px',
+	        marginLeft: '-' + Math.round(rx * coords.x) + 'px',
+	        marginTop: '-' + Math.round(ry * coords.y) + 'px'
+	      }).show();
 	    }
-	  };
-	  
+	  }
 	  
 	  
 		$("#btnReg").bind("click",function(){

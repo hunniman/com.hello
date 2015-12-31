@@ -11,13 +11,14 @@
 <jsp:include page="common/js.jsp" />
 <jsp:include page="common/validator.jsp" />
 <jsp:include page="common/jcrop.jsp" />
+<jsp:include page="common/progressbar.jsp" />
 
 <script src="resource/js/doActivity.js"></script>
 </head>
 <body>
 	<jsp:include page="common/header.jsp" />
 	<div class="jumbotron">
-	
+	   
 	</div>
 	
 	<div class="container">
@@ -25,16 +26,29 @@
 	       <c:when test="${userInfo.email!=null}">
 	         	<form id="fillInfoForm" class="form-horizontal" role="form">
 	         		<div class="form-group">
-	         			<div class="col-sm-2"></div>
+	         			<label class="col-sm-2 control-label">头像</label>
 						<div class="col-sm-3">
-						<div class="col-sm-5">
-							<img data-src="holder.js/200x200" class="img-thumbnail" alt="我是头像" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzIwMHgyMDAKQ3JlYXRlZCB3aXRoIEhvbGRlci5qcyAyLjYuMC4KTGVhcm4gbW9yZSBhdCBodHRwOi8vaG9sZGVyanMuY29tCihjKSAyMDEyLTIwMTUgSXZhbiBNYWxvcGluc2t5IC0gaHR0cDovL2ltc2t5LmNvCi0tPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PCFbQ0RBVEFbI2hvbGRlcl8xNTFmMDIxMzFmMCB0ZXh0IHsgZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQgfSBdXT48L3N0eWxlPjwvZGVmcz48ZyBpZD0iaG9sZGVyXzE1MWYwMjEzMWYwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9Ijc1LjUiIHk9IjEwNC41Ij4yMDB4MjAwPC90ZXh0PjwvZz48L2c+PC9zdmc+" data-holder-rendered="true" style="width: 80px; height: 80px;">
+								<div class="col-sm-5">
+									<img data-src="holder.js/200x200" class="img-thumbnail" alt="我是头像" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiPjwhLS0KU291cmNlIFVSTDogaG9sZGVyLmpzLzIwMHgyMDAKQ3JlYXRlZCB3aXRoIEhvbGRlci5qcyAyLjYuMC4KTGVhcm4gbW9yZSBhdCBodHRwOi8vaG9sZGVyanMuY29tCihjKSAyMDEyLTIwMTUgSXZhbiBNYWxvcGluc2t5IC0gaHR0cDovL2ltc2t5LmNvCi0tPjxkZWZzPjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+PCFbQ0RBVEFbI2hvbGRlcl8xNTFmMDIxMzFmMCB0ZXh0IHsgZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQgfSBdXT48L3N0eWxlPjwvZGVmcz48ZyBpZD0iaG9sZGVyXzE1MWYwMjEzMWYwIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9Ijc1LjUiIHk9IjEwNC41Ij4yMDB4MjAwPC90ZXh0PjwvZz48L2c+PC9zdmc+" data-holder-rendered="true" style="width: 80px; height: 80px;">
+								</div>
+								<div class="col-sm-2">
+									<div style="margin-top:60px;">
+										<span class="label label-primary" data-toggle="modal" data-target="#myModal">修改</span>
+											<input type="file" id="editorFile" name="editorFile" style="display:none;"/>
+		<!-- 					              	<span class="process clearfix" id="process"> </span> -->
+		<!-- 									<span class="progress-box"> -->
+		<!-- 										<span class="progress-bar" style="width: 0%;" id="progress_bar"></span> -->
+		<!-- 									</span> -->
+		<!-- 					                      <span id="progress_percent">0%</span> -->
+		<!-- 					                <span class="info" id="info">已上传：<span id="has_upload">0</span>MB  速度：<span id="upload_speed">0</span>KB/s</span> -->
+		<!-- 					                <span class="info" id="success_info" style="display: none;"></span> -->
+									</div>
+								</div>
 						</div>
-						<div class="col-sm-2">
-							<div style="margin-top:60px;">
-								<span class="label label-primary" data-toggle="modal" data-target="#myModal">修改</span>
-							</div>
-						</div>
+						<div class="col-sm-7" >
+						       	<div class="progress" style="margin-top:60px;">
+						    	 	<div class="progress-bar progress-bar-success" role="progressbar" data-transitiongoal="40"></div>
+							   </div>
 						</div>
 					</div>
 					<div class="form-group">
@@ -126,16 +140,18 @@
 						<h4 class="modal-title" id="myModalLabel">模态框（Modal）标题</h4>
 					</div>
 					<div class="modal-body">
-						<div class="row">
-<!-- 							<div class="col-md-8"> -->
-<!-- 						    	<img src="cacheUpload/èµå®èç¿-æç»ç¨¿1.jpg" id="target" alt="[Jcrop Example]" width=200px; height=200px; > -->
-<!-- 						    </div> -->
-<!-- 					        <div id="preview-pane" class="col-md-4"> -->
-<!-- <!-- 					          <div class="preview-container"> --> -->
-<!-- 					            <img src="cacheUpload/èµå®èç¿-æç»ç¨¿1.jpg" class="jcrop-preview" alt="Preview" width=100px; height=100px;> -->
-<!-- <!-- 					          </div> --> -->
-<!-- 					        </div> -->
-				        </div>
+<!-- 						<div class="row"> -->
+<!-- 							<div class="row"> -->
+<!-- 							        <div class="col-md-8"> -->
+<!-- 							        	<img src="cacheUpload/eee.png" id="target" alt="[Jcrop Example]"  > -->
+<!-- 							        </div> -->
+<!-- 							        <div class="col-md-4" > -->
+<!-- 							      	  	<div style="width:100px;height:100px;overflow:hidden;"> -->
+<!-- 							        	 	<img src="cacheUpload/eee.png" id="preview" class="jcrop-preview" alt="Preview"> -->
+<!-- 							        	 </div> -->
+<!-- 							        </div> -->
+<!-- 							 </div> -->
+<!-- 				        </div> -->
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-default" data-dismiss="modal">
@@ -145,17 +161,6 @@
 				</div>
 			</div>
 		</div>
-
-		<div class="row">
-		        <div class="col-md-8">
-		        	<img src="cacheUpload/eee.png" id="target" alt="[Jcrop Example]" width=200px; height=200px; >
-		        </div>
-		        <div class="col-md-4">
-		        	 <img src="cacheUpload/eee.png" id="targetPre" class="jcrop-preview" alt="Preview" width=100px; height=100px;>
-		        </div>
-		 </div>
-
-				        
 	</div>
 
 </body>
