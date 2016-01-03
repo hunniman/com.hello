@@ -1,22 +1,68 @@
+
+
 $(function() {
 	
-	var i=0;
+	var initProgress=function(){
+		 $('#progress').show();
+		 $('.progress .progress-bar').progressbar({
+			 display_text: 'center', 
+			 use_percentage: false, 
+			 amount_format: function(speed) {
+				 return  speed +"%";
+			 }
+		 });
+	};
 	
-	 $('.progress .progress-bar').progressbar({
-		 display_text: 'center', 
-		 use_percentage: false, 
-		 amount_format: function(speed,p) {return '速度: ' + speed + '   已上传: ' + speed }
-	 });
-	 
 	
-	var int= setInterval(function(){
-		 $('.progress .progress-bar').attr("data-transitiongoal",i+=10).progressbar();
-		 if(i>=100){
-			 window.clearInterval(int);
-		 }
-	 },1000);
-	 
-	 $('.progress .progress-bar').update(a,b)
+	$("#updateHeader").bind("click",function(){$("#editorFile").trigger("click");});
+	$("#editorFile").on("change",function(){
+		uploadPhoto($(this).val(),"editorFile","headerPhoUpload",function(a){
+			$('#progress').hide();
+			$("#myModal img").attr("src",a);
+			$("#myModal").modal('show');
+		});
+	});
+	
+	
+	var uploadPhoto=function(fileValue,fileId,url,callBack){
+		   var reg=/^.*[^a][^b][^c]\.(?:png|jpg|bmp|gif|jpeg)$/;
+		   if(!reg.test(fileValue.toLowerCase())){
+			  	alert("上传的图片格式不对!","");
+		    	return;
+		   }
+		   initProgress();
+		   oTimer = setInterval(function(){getProgress();}, 100);
+		   $.ajaxFileUpload({
+				url :url,
+				secureuri : false,
+				fileElementId :fileId,
+				dataType :'text',
+				success : function(data, status) {
+					window.clearInterval(oTimer);
+					callBack(data);
+				},
+				error : function(data, status, e) {
+					alert("系统出错，请稍后再试！","");
+				}
+			});
+	};
+	
+	
+	var getProgress=function() {
+		var now = new Date();
+	    $.ajax({
+	        type: "post",
+	        dataType: "json",
+	        url: "fileStatus/upfile/progress",
+	        data: now.getTime(),
+	        success: function(data) {
+	            $('.progress .progress-bar').attr("data-transitiongoal",data.percent*100).progressbar();
+	        },
+	        error: function(err) {
+	        	alert("系统出错，请稍后再试！","");
+	        }
+	    });
+	};
 	 
 	 
 	

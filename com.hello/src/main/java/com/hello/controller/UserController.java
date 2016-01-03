@@ -220,6 +220,57 @@ public class UserController extends BaseController {
 			log.error("doActivity err",e);
 			return new ModelAndView("doActivityBack","userInfo",userReturn);
 		}
-		
 	}
+	
+	
+	
+	/**
+     * 这里这里用的是MultipartFile[] myfiles参数,所以前台就要用<input type="file" name="myfiles"/>
+     * 上传文件完毕后返回给前台[0`filepath],0表示上传成功(后跟上传后的文件路径),1表示失败(后跟失败描述)
+     */
+    @RequestMapping(value="/headerPhoUpload")
+    public @ResponseBody String headerPhoUpload(@RequestParam MultipartFile[] editorFile, HttpServletRequest request) throws IOException{
+        //可以在上传文件的同时接收其它参数
+        //如果用的是Tomcat服务器，则文件会上传到\\%TOMCAT_HOME%\\webapps\\YourWebProject\\upload\\文件夹中
+        //这里实现文件上传操作用的是commons.io.FileUtils类,它会自动判断/upload是否存在,不存在会自动创建
+        String realPath = request.getSession().getServletContext().getRealPath("/cacheUpload");
+        //设置响应给前台内容的数据格式
+        //上传文件的原名(即上传前的文件名字)
+        String originalFilename = null;
+        //如果只是上传一个文件,则只需要MultipartFile类型接收文件即可,而且无需显式指定@RequestParam注解
+        //如果想上传多个文件,那么这里就要用MultipartFile[]类型来接收文件,并且要指定@RequestParam注解
+        //上传多个文件时,前台表单中的所有<input type="file"/>的name都应该是myfiles,否则参数里的myfiles无法获取到所有上传的文件
+        for(MultipartFile myfile : editorFile){
+            if(myfile.isEmpty()){
+                return "请选择文件后上传";
+            }else{
+                originalFilename =System.currentTimeMillis()+ myfile.getOriginalFilename().substring(myfile.getOriginalFilename().lastIndexOf("."));;
+                System.out.println("文件原名: " + originalFilename);
+                System.out.println("文件名称: " + myfile.getName());
+                System.out.println("文件长度: " + myfile.getSize());
+                System.out.println("文件类型: " + myfile.getContentType());
+                System.out.println("========================================");
+                try {
+                    //这里不必处理IO流关闭的问题,因为FileUtils.copyInputStreamToFile()方法内部会自动把用到的IO流关掉
+                    //此处也可以使用Spring提供的MultipartFile.transferTo(File dest)方法实现文件的上传
+//                    FileUtils.copyInputStreamToFile(myfile.getInputStream(), new File(realPath, originalFilename));
+                    Thumbnails.of(myfile.getInputStream()).scale(1).toFile(new File(realPath, originalFilename));
+//                    Thumbnails.of(new File("F:\\ee.jpg")).size(434,951).toFile("F:\\ee3.jpg");
+                } catch (IOException e) {
+                    System.out.println("文件[" + originalFilename + "]上传失败,堆栈轨迹如下");
+                    e.printStackTrace();
+                    return "文件上传失败，请重试！！";
+                }
+            }
+        }
+        //此时在Windows下输出的是[D:\Develop\apache-tomcat-6.0.36\webapps\AjaxFileUpload\\upload\愤怒的小鸟.jpg]
+        //System.out.println(realPath + "\\" + originalFilename);
+        //此时在Windows下输出的是[/AjaxFileUpload/upload/愤怒的小鸟.jpg]
+        //System.out.println(request.getContextPath() + "/upload/" + originalFilename);
+        //不推荐返回[realPath + "\\" + originalFilename]的值
+        //因为在Windows下<img src="file:///D:/aa.jpg">能被firefox显示,而<img src="D:/aa.jpg">firefox是不认的
+//        out.print("0`" + request.getContextPath() + "/upload/" + originalFilename);
+//        return request.getContextPath() + "/upload/" + originalFilename;
+        return "cacheUpload/" + originalFilename;
+    }
 }

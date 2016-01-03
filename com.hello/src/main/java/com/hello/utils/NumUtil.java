@@ -44,10 +44,12 @@ public class NumUtil {
         BigDecimal a = toBig(divisor);
         BigDecimal b = toBig(dividend);
         if(a.equals(toBig(0)) || b.equals(toBig(0)) || a.equals(toBig(0.0)) || b.equals(toBig(0.0))){
-       	 return "0.00%";
+       	 	return "0.00%";
+//        	return "0";
         }
         BigDecimal c = a.divide(b, 4, BigDecimal.ROUND_DOWN);
         return percent.format(c);
+//        return c.toString();
     }
     
     /**

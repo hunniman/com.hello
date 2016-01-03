@@ -51,8 +51,9 @@ public class Progress {
 	}
 
 	public String getPercent() {
-		percent = NumUtil.getPercent(bytesRead, contentLength);
-		return percent;
+//		percent = NumUtil.getPercent(bytesRead, contentLength);
+//		System.err.println(NumUtil.getPercent(bytesRead, contentLength));
+		return ((double)(bytesRead/contentLength))+"";
 	}
 
 	public void setPercent(String percent) {
