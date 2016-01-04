@@ -23,12 +23,6 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-/**
- * 
- * 创建人：fantasy <br>
- * 创建时间：2013-12-10 <br>
- * 功能描述：文件上传下载Util <br>
- */
 public class FileOperateUtil {
 	private static final String REALNAME = "realName";
 	private static final String STORENAME = "storeName";

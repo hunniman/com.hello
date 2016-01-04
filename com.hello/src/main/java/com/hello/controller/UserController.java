@@ -1,5 +1,6 @@
 package com.hello.controller;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
+import javax.imageio.ImageIO;
+import javax.imageio.stream.ImageInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,6 +41,7 @@ import com.hello.model.UserInfo;
 import com.hello.redis.RedisConstants;
 import com.hello.redis.RedisUtils;
 import com.hello.utils.EncryptionUtil;
+import com.hello.utils.ExtensionUtils;
 import com.hello.utils.JsonUtil;
 import com.hello.utils.MessagePackUtils;
 import com.hello.utils.TimeDateUtil;
@@ -254,8 +258,21 @@ public class UserController extends BaseController {
                     //这里不必处理IO流关闭的问题,因为FileUtils.copyInputStreamToFile()方法内部会自动把用到的IO流关掉
                     //此处也可以使用Spring提供的MultipartFile.transferTo(File dest)方法实现文件的上传
 //                    FileUtils.copyInputStreamToFile(myfile.getInputStream(), new File(realPath, originalFilename));
-                    Thumbnails.of(myfile.getInputStream()).scale(1).toFile(new File(realPath, originalFilename));
-//                    Thumbnails.of(new File("F:\\ee.jpg")).size(434,951).toFile("F:\\ee3.jpg");
+                	BufferedImage bi = ImageIO.read(myfile.getInputStream());
+                	if(bi.getWidth()>100||bi.getHeight()>100){
+                		double scare=1;
+                		if(bi.getWidth()>500){
+                			scare=(double)500/bi.getWidth();
+                		}else if(bi.getHeight()>500){
+                			scare=(double)500/bi.getHeight();
+                		}
+                		Thumbnails.of(myfile.getInputStream()).scale(scare).toFile(new File(realPath, originalFilename));
+                	}else if(bi.getWidth()<100||bi.getHeight()<100){
+                		Thumbnails.of(myfile.getInputStream()).size(100,100).toFile(new File(realPath, originalFilename));
+                	}else{
+                		Thumbnails.of(myfile.getInputStream()).scale(1).toFile(new File(realPath, originalFilename));
+                	}
+//                  Thumbnails.of(new File("F:\\ee.jpg")).size(434,951).toFile("F:\\ee3.jpg");
                 } catch (IOException e) {
                     System.out.println("文件[" + originalFilename + "]上传失败,堆栈轨迹如下");
                     e.printStackTrace();
@@ -272,5 +289,44 @@ public class UserController extends BaseController {
 //        out.print("0`" + request.getContextPath() + "/upload/" + originalFilename);
 //        return request.getContextPath() + "/upload/" + originalFilename;
         return "cacheUpload/" + originalFilename;
+    }
+    
+    
+    
+    
+    @RequestMapping(value="/cutheaderPho")
+    public @ResponseBody String cutheaderPho(@RequestParam String fileName,@RequestParam int x,@RequestParam int y,@RequestParam int w,@RequestParam int h){
+    	ImageInputStream iis = null;  
+    	try {
+    		 fileName= ExtensionUtils.getFileName(fileName);
+    		 log.debug(fileName+":"+x+":"+y+":"+w+":"+h);
+    		 String realPath = request.getSession().getServletContext().getRealPath("/cacheUpload");
+    		 File f=new File(realPath+"\\"+fileName);
+    		 if(!f.exists()){
+    			 return FAILED;
+    		 }
+    		 BufferedImage bi = (BufferedImage)ImageIO.read(f);  
+    		 h = Math.min(h, bi.getHeight());     
+    		  w = Math.min(w, bi.getWidth());     
+    		  if(h <= 0) h = bi.getHeight();     
+    		  if(w <= 0) w = bi.getWidth();     
+    		  x = Math.min(Math.max(0, x), bi.getHeight()-h);     
+    		  y = Math.min(Math.max(0, y), bi.getWidth()-w);  
+    		 BufferedImage bi_cropper = bi.getSubimage(x, y, w, h);
+    		 String outPath = request.getSession().getServletContext().getRealPath("/headerImg")+"\\"+fileName;
+    		 ImageIO.write(bi_cropper,ExtensionUtils.getExtension(fileName), new File(outPath));  
+    		 return "headerImg/" + fileName;
+		} catch (Exception e) {
+			log.error("{} cutheaderPho error",e);
+			return FAILED;
+		}finally{
+			if(iis!=null)
+				try {
+					iis.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
     }
 }

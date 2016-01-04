@@ -1,6 +1,32 @@
-
-
 $(function() {
+	var jcrop_api=null;
+	
+	$("#leftSide li").bind("click",function(){
+		$("#leftSide li").attr("class","");
+		$(this).attr("class","active");
+		var name=$(this).attr("name");
+		if(name==="headerArea"){
+			$("#headerArea").show();
+			$("#baseInfoArea").hide();
+		}else if(name==="baseInfoArea"){
+			$("#headerArea").hide();
+			$("#baseInfoArea").show();
+		}
+	});
+	
+	$("#btnCapture").bind("click",function(){
+		cutImage();
+	});
+	$("#btnCaptureCancel").bind("click",function(){
+		resetOrgiArea();
+	});
+	
+	var resetOrgiArea=function(){
+		$("#orgiHeaderArea").show();
+		$("#captureArea").hide();
+		$("#rcropArea").empty();
+	};
+	
 	
 	var initProgress=function(){
 		 $('#progress').show();
@@ -13,15 +39,30 @@ $(function() {
 		 });
 	};
 	
+	var initHeaderUpload=function(){
+		$("#editorFile").bind("change",function(){
+			uploadPhoto($(this).val(),"editorFile","headerPhoUpload",function(a){
+				initHeaderUpload();
+				$("#orgiHeaderArea").hide();
+				$('#progress').hide();
+				
+				var jcropArea="<img src="+a+" id='target' />";
+				$(jcropArea).appendTo($("#rcropArea"));
+				$("#myModal img").attr("src",a);
+				$("#target").attr("src",a);
+				$("#captureArea").show();
+				if(jcrop_api!==null){
+					jcrop_api.destroy();
+				}
+				$("#target").load(function(){
+					initJcrop();
+				});
+			});
+		});
+	};
 	
 	$("#updateHeader").bind("click",function(){$("#editorFile").trigger("click");});
-	$("#editorFile").on("change",function(){
-		uploadPhoto($(this).val(),"editorFile","headerPhoUpload",function(a){
-			$('#progress').hide();
-			$("#myModal img").attr("src",a);
-			$("#myModal").modal('show');
-		});
-	});
+	
 	
 	
 	var uploadPhoto=function(fileValue,fileId,url,callBack){
@@ -64,45 +105,57 @@ $(function() {
 	    });
 	};
 	 
+	
+	var initJcrop=function(){
+		  $('#target').Jcrop({
+			    onChange: updateCoords,
+			    onSelect: updateCoords,
+			    aspectRatio: 1,
+			    minSize:[100,100],
+			    allowResize:false,
+			    allowSelect:false
+			  },function(){
+			      jcrop_api = this;
+			      jcrop_api.animateTo([50, 50, 100, 100]);
+			  });
+
+	};
+	
+	function updateCoords(c){
+		  $('#x').val(c.x);
+		  $('#y').val(c.y);
+		  $('#w').val(c.w);
+		  $('#h').val(c.h);
+	};
+	
+
+
+	var cutImage=function(){
+		var x=$("#x").val();
+		var y=$("#y").val();
+		var w=$("#w").val();
+		var h=$("#h").val();
+		var fileName=$('#target').attr("src");
+		 $.ajax({
+		        type: "post",
+		        dataType: "text",
+		        url: "cutheaderPho",
+		        data: {fileName:fileName,x:x,y:y,w:w,h:h},
+		        success: function(data) {
+		        	if(data==="failed"){
+		        		alert("更新失败！");
+		        		return;
+		        	}
+		        	$("#headerImg").attr("src",data);
+		        	resetOrgiArea();
+		        },
+		        error: function(err) {
+		        	alert(err);
+		        }
+		    });
+	};
+	
 	 
-	
-	var jcrop_api,
-	  boundx,
-	  boundy;
-	  
-	  // Grab some information about the preview pane
-	  
-//	  console.log('init',[xsize,ysize]);
-
-	
-	  $('#target').Jcrop({
-	    onChange: showPreview,
-	    onSelect: showPreview,
-	    aspectRatio: 1,
-	    minSize:[100,100],
-	    allowResize:false,
-	    allowSelect:false
-	  },function(){
-	      jcrop_api = this;
-	      jcrop_api.animateTo([50, 50, 100, 100]);
-	  });
-	  
-	  var $preview = $('#preview');
-	  function showPreview(coords)
-	  {
-	    if (parseInt(coords.w) > 0)
-	    {
-	      var rx = 100 / coords.w;
-	      var ry = 100 / coords.h;
-
-	      $preview.css({
-	        width: Math.round(rx * 558) + 'px',
-	        height: Math.round(ry * 790) + 'px',
-	        marginLeft: '-' + Math.round(rx * coords.x) + 'px',
-	        marginTop: '-' + Math.round(ry * coords.y) + 'px'
-	      }).show();
-	    }
-	  }
 	  
 	  
 		$("#btnReg").bind("click",function(){
@@ -114,7 +167,7 @@ $(function() {
 			        url: "doSignUp",
 			        data: $('#regForm').serialize(),
 			        success: function(data) {
-			        	alert(data);
+			        	$("#headerImg").attr("src",data);
 			        },
 			        error: function(err) {
 			        	alert(err);
@@ -187,4 +240,6 @@ $(function() {
 	            }
 	        }
 	    });
+		
+		initHeaderUpload();
 	});
