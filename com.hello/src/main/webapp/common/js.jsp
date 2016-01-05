@@ -6,3 +6,5 @@
 
 <!-- 文件上传插件 -->
 <script src="resource/js/ajaxfileupload.js"></script>
+
+<script src="resource/toastr/toastr.js"></script>

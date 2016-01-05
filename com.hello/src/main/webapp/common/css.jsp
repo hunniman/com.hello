@@ -7,3 +7,5 @@
 
 <link rel="stylesheet" href="resource/css/main.css">
 
+<link rel="stylesheet" href="resource/toastr/toastr.scss">
+
