@@ -1,7 +1,6 @@
 var doActivity=function(){
 	var self=this;
 	var jcrop_api=null;
-	
 	self.initEvent=function(){
 		$("#leftSide li").bind("click",function(){
 			$("#leftSide li").attr("class","");
@@ -10,9 +9,15 @@ var doActivity=function(){
 			if(name==="headerArea"){
 				$("#headerArea").show();
 				$("#baseInfoArea").hide();
+				$("#pwdArea").hide();
 			}else if(name==="baseInfoArea"){
 				$("#headerArea").hide();
 				$("#baseInfoArea").show();
+				$("#pwdArea").hide();
+			}else if(name==="pwdArea"){
+				$("#headerArea").hide();
+				$("#baseInfoArea").hide();
+				$("#pwdArea").show();
 			}
 		});
 		
@@ -25,24 +30,51 @@ var doActivity=function(){
 		$("#updateHeader").bind("click",function(){$("#editorFile").trigger("click");});
 		
 		$("#btnReg").bind("click",function(){
-			   $('#regForm').bootstrapValidator('validate');
-			   if($('#regForm').data('bootstrapValidator').isValid()){
+			   $('#fillInfoForm').bootstrapValidator('validate');
+			   if($('#fillInfoForm').data('bootstrapValidator').isValid()){
 				   $.ajax({
 				        type: "post",
 				        dataType: "json",
-				        url: "doSignUp",
-				        data: $('#regForm').serialize(),
+				        url: "updateBaseInfo",
+				        data: $('#fillInfoForm').serialize(),
 				        success: function(data) {
-				        	$("#headerImg").attr("src",data);
+				        	if(data.valid==="success")
+				        		toastr.success('修改成功');
+				        	else
+				        		toastr.error('修改失败');
 				        },
 				        error: function(err) {
-				        	toastr.error('修改成功');
+				        	toastr.error('修改失败');
 				        }
 				    });
 			   }
 		});
 		
+		$("#btnSavePwd").bind("click",function(){
+			   $('#pwdInfoForm').bootstrapValidator('validate');
+			   if($('#pwdInfoForm').data('bootstrapValidator').isValid()){
+				   $.ajax({
+				        type: "post",
+				        dataType: "json",
+				        url: "updatePassword",
+				        data: $('#pwdInfoForm').serialize(),
+				        success: function(data) {
+				        	if(data.valid==="success")
+				        		toastr.success('修改成功');
+				        	else
+				        		toastr.error('修改失败');
+				        },
+				        error: function(err) {
+				        	toastr.error('修改失败');
+				        }
+				    });
+			   }
+		});
+		
+		
 		self.initHeaderUpload();
+		self.initValidation();
+		self.initPwdValidation();
 	};
 	
 	self.resetOrgiArea=function(){
@@ -110,7 +142,7 @@ var doActivity=function(){
 		    	return;
 		   }
 		   self.initProgress();
-		   oTimer = setInterval(function(){getProgress();}, 100);
+		   oTimer = setInterval(function(){self.getProgress();}, 100);
 		   $.ajaxFileUpload({
 				url :url,
 				secureuri : false,
@@ -176,6 +208,103 @@ var doActivity=function(){
 		  $('#h').val(c.h);
 	};
 	
+	self.initValidation=function(){
+		$('#fillInfoForm').bootstrapValidator({
+	        message: 'This value is not valid',
+	        feedbackIcons: {
+	            valid: 'glyphicon glyphicon-ok',
+	            invalid: 'glyphicon glyphicon-remove',
+	            validating: 'glyphicon glyphicon-refresh'
+	        },
+	        fields: {
+	        	userName: {
+	                message: '输入昵称',
+	                validators: {
+	                    notEmpty: {
+	                        message: '请输入昵称'
+	                    },
+	                    stringLength: {
+	                        min: 1,
+	                        max: 30,
+	                        message: '昵称长度在1~30个字符长度'
+	                    }
+	                }
+	            },
+	            gender: {
+                    validators: {
+                        notEmpty: {
+                            message: ' '
+                        }
+                    }
+	            },
+	            contract: {
+	                message: '输入联系方式',
+	                validators: {
+	                    notEmpty: {
+	                        message: '输入联系方式'
+	                    },
+	                    stringLength: {
+	                        min: 1,
+	                        max: 30,
+	                        message: '联系方式长度在1~30个字符长度'
+	                    }
+	                }
+	            },
+	            
+	        }
+	    });
+	};
+	
+	self.initPwdValidation=function(){
+		$('#pwdInfoForm').bootstrapValidator({
+	        message: 'This value is not valid',
+	        feedbackIcons: {
+	            valid: 'glyphicon glyphicon-ok',
+	            invalid: 'glyphicon glyphicon-remove',
+	            validating: 'glyphicon glyphicon-refresh'
+	        },
+	        fields: {
+	        	textPwd: {
+	                message: '输入的密码无效',
+	                validators: {
+	                    notEmpty: {
+	                        message: '请输入密码'
+	                    },
+	                    stringLength: {
+	                        min: 6,
+	                        max: 30,
+	                        message: '密码长度在6~30个字符长度'
+	                    },
+	                    regexp: {
+	                        regexp: /^[a-zA-Z0-9_]+$/,
+	                        message: '密码不能包含特殊字符'
+	                    }
+	                }
+	            },
+	            textConfirmPwd: {
+	                message: '输入的密码无效',
+	                validators: {
+	                    notEmpty: {
+	                        message: '请输入密码'
+	                    },
+	                    stringLength: {
+	                        min: 6,
+	                        max: 30,
+	                        message: '密码长度在6~30个字符长度'
+	                    },
+	                    identical: {
+	                        field: 'textPwd',
+	                        message: '两次输入的密码不相同'
+	                    },
+	                    regexp: {
+	                        regexp: /^[a-zA-Z0-9_]+$/,
+	                        message: '密码不能包含特殊字符'
+	                    }
+	                }
+	            }
+	        }
+	    });
+	};
 	
 };
 

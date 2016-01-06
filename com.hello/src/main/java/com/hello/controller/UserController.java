@@ -55,8 +55,8 @@ public class UserController extends BaseController {
 	@Autowired
 	private RedisUtils redisUtils;
 	
-	@RequestMapping("/embeddedTestJson")
-	public  ModelAndView  test(){
+	@RequestMapping("/index")
+	public  ModelAndView  index(){
 //		List<Blog> find = Blog.dao.find("select * from blog ");
 		List<UserInfo> find=new ArrayList<UserInfo>();
 		MessagePack msgpack = new MessagePack();
@@ -67,7 +67,7 @@ public class UserController extends BaseController {
 					byte[]value=hgetAll.get(tempByte);
 					UserInfo read = msgpack.read(value,UserInfo.class);
 					find.add(read);
-					jedis.hdel(RedisConstants.userKey, tempByte);
+//					jedis.hdel(RedisConstants.userKey, tempByte);
 				}
 			}
 		} catch (Exception e) {
@@ -198,35 +198,45 @@ public class UserController extends BaseController {
 	}
 	
 	@RequestMapping(path ="/doActivity", method = RequestMethod.GET)
-	public ModelAndView doActivity(@RequestParam String token){
-		UserInfo userReturn=new UserInfo();
+	public ModelAndView doActivity(@RequestParam String token,HttpServletRequest request){
+		int result=Constants.STATUS_SUCCESS;
 		try {
 			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
 				if(jedis.hexists(RedisConstants.activityCodeKey, token)){
 					String email=jedis.hget(RedisConstants.activityCodeKey, token);
-//					byte[] hget = jedis.hget(RedisConstants.userKey, email.getBytes());
-//					UserInfo user = MessagePackUtils.byte2Object(hget, UserInfo.class);
-					userReturn.setEmail(email);
-//					if(user.getIsActive()==0){
-//						user.setIsActive((byte)1);
-//						byte[] bytes = MessagePackUtils.getBytes(user);
-//						jedis.hset(RedisConstants.userKey, email.getBytes(), bytes);
-//						log.info("{} has success to active account",email);
-//						userReturn.setIsActive((byte)1);
-//						jedis.hdel(RedisConstants.activityCodeKey, token);
-//						System.err.println("2222222222222222222");
-//					}
-//					System.err.println("dddddddddddddddddddddddddddddddd");
+					byte[] hget = jedis.hget(RedisConstants.userKey, email.getBytes());
+					UserInfo user = MessagePackUtils.byte2Object(hget, UserInfo.class);
+					user.setIsActive((byte)1);
+					jedis.hdel(RedisConstants.activityCodeKey, token);
+					byte[] write = MessagePackUtils.getBytes(user);
+					jedis.hset(RedisConstants.userKey, user.getEmail().getBytes(), write);
+					request.getSession().setAttribute(Constants.USER_SESSION,generalSessinonUser(user));
+				}else{
+					result=Constants.STATUS_FAILURE;
 				}
 			}
-			return new ModelAndView("doActivityBack","userInfo",userReturn);
+			return new ModelAndView("activityBack","result",result);
 		} catch (Exception e) {
 			log.error("doActivity err",e);
-			return new ModelAndView("doActivityBack","userInfo",userReturn);
+			return new ModelAndView("activityBack","result",result);
 		}
 	}
 	
 	
+	@RequestMapping(path ="/baseInfo", method = RequestMethod.GET)
+	public ModelAndView baseInfo(@RequestParam String token,HttpServletRequest request){
+		UserInfo userReturn=null;
+		try {
+			userReturn=getUser();
+			if(userReturn==null){
+				return index();
+			}
+			return new ModelAndView("baseInfo","userInfo",userReturn);
+		} catch (Exception e) {
+			log.error("baseInfo err",e);
+			return new ModelAndView("baseInfo","userInfo",userReturn);
+		}
+	}
 	
 	/**
      * 这里这里用的是MultipartFile[] myfiles参数,所以前台就要用<input type="file" name="myfiles"/>
@@ -234,7 +244,11 @@ public class UserController extends BaseController {
      */
     @RequestMapping(value="/headerPhoUpload")
     public @ResponseBody String headerPhoUpload(@RequestParam MultipartFile[] editorFile, HttpServletRequest request) throws IOException{
-        //可以在上传文件的同时接收其它参数
+       try {
+    	UserInfo user = getUser();
+        if(user==null)
+        	return FAILED;
+    	//可以在上传文件的同时接收其它参数
         //如果用的是Tomcat服务器，则文件会上传到\\%TOMCAT_HOME%\\webapps\\YourWebProject\\upload\\文件夹中
         //这里实现文件上传操作用的是commons.io.FileUtils类,它会自动判断/upload是否存在,不存在会自动创建
         String realPath = request.getSession().getServletContext().getRealPath("/cacheUpload");
@@ -246,15 +260,14 @@ public class UserController extends BaseController {
         //上传多个文件时,前台表单中的所有<input type="file"/>的name都应该是myfiles,否则参数里的myfiles无法获取到所有上传的文件
         for(MultipartFile myfile : editorFile){
             if(myfile.isEmpty()){
-                return "请选择文件后上传";
+                return FAILED;
             }else{
-                originalFilename =System.currentTimeMillis()+ myfile.getOriginalFilename().substring(myfile.getOriginalFilename().lastIndexOf("."));;
+                originalFilename =EncryptionUtil.encode(user.getEmail())+"."+ExtensionUtils.getExtension(myfile.getOriginalFilename());;
                 System.out.println("文件原名: " + originalFilename);
                 System.out.println("文件名称: " + myfile.getName());
                 System.out.println("文件长度: " + myfile.getSize());
                 System.out.println("文件类型: " + myfile.getContentType());
                 System.out.println("========================================");
-                try {
                     //这里不必处理IO流关闭的问题,因为FileUtils.copyInputStreamToFile()方法内部会自动把用到的IO流关掉
                     //此处也可以使用Spring提供的MultipartFile.transferTo(File dest)方法实现文件的上传
 //                    FileUtils.copyInputStreamToFile(myfile.getInputStream(), new File(realPath, originalFilename));
@@ -273,11 +286,6 @@ public class UserController extends BaseController {
                 		Thumbnails.of(myfile.getInputStream()).scale(1).toFile(new File(realPath, originalFilename));
                 	}
 //                  Thumbnails.of(new File("F:\\ee.jpg")).size(434,951).toFile("F:\\ee3.jpg");
-                } catch (IOException e) {
-                    System.out.println("文件[" + originalFilename + "]上传失败,堆栈轨迹如下");
-                    e.printStackTrace();
-                    return "文件上传失败，请重试！！";
-                }
             }
         }
         //此时在Windows下输出的是[D:\Develop\apache-tomcat-6.0.36\webapps\AjaxFileUpload\\upload\愤怒的小鸟.jpg]
@@ -288,7 +296,11 @@ public class UserController extends BaseController {
         //因为在Windows下<img src="file:///D:/aa.jpg">能被firefox显示,而<img src="D:/aa.jpg">firefox是不认的
 //        out.print("0`" + request.getContextPath() + "/upload/" + originalFilename);
 //        return request.getContextPath() + "/upload/" + originalFilename;
-        return "cacheUpload/" + originalFilename;
+        	return "cacheUpload/" + originalFilename;
+       } catch (Exception e) {
+    	    log.error("headerPhoUpload err",e);
+			return FAILED;
+		}
     }
     
     
@@ -298,6 +310,9 @@ public class UserController extends BaseController {
     public @ResponseBody String cutheaderPho(@RequestParam String fileName,@RequestParam int x,@RequestParam int y,@RequestParam int w,@RequestParam int h){
     	ImageInputStream iis = null;  
     	try {
+    		 UserInfo user=getUser();
+    		 if(user==null)return FAILED;
+    		 
     		 fileName= ExtensionUtils.getFileName(fileName);
     		 log.debug(fileName+":"+x+":"+y+":"+w+":"+h);
     		 String realPath = request.getSession().getServletContext().getRealPath("/cacheUpload");
@@ -315,6 +330,11 @@ public class UserController extends BaseController {
     		 BufferedImage bi_cropper = bi.getSubimage(x, y, w, h);
     		 String outPath = request.getSession().getServletContext().getRealPath("/headerImg")+"\\"+fileName;
     		 ImageIO.write(bi_cropper,ExtensionUtils.getExtension(fileName), new File(outPath));  
+    		 user.setHeaderImage("headerImg/" + fileName);
+    		 try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
+ 				byte[] write = MessagePackUtils.getBytes(user);
+ 				jedis.hset(RedisConstants.userKey, user.getEmail().getBytes(), write);
+ 			}
     		 return "headerImg/" + fileName;
 		} catch (Exception e) {
 			log.error("{} cutheaderPho error",e);
@@ -329,4 +349,62 @@ public class UserController extends BaseController {
 				}
 		}
     }
+    
+    
+    @RequestMapping(path ="/updateBaseInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public String updateBaseInfo(@RequestParam String userName,@RequestParam String gender,@RequestParam String contract,HttpServletRequest request,HttpServletResponse response){
+		Map<String,Object>result=new HashMap<String,Object>(1);
+		try {
+			UserInfo user= getUser();
+			if(user==null){
+				result.put("valid", FAILED);
+				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
+			}
+			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
+				user.setUserName(userName);
+				user.setGender(Integer.parseInt(gender));
+				user.setContract(contract);
+				byte[] write = MessagePackUtils.getBytes(user);
+				jedis.hset(RedisConstants.userKey, user.getEmail().getBytes(), write);
+				request.getSession().setAttribute(Constants.USER_SESSION, generalSessinonUser(user));
+			}
+			result.put("valid", SUCCESS);
+			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+		} catch (Exception e) {
+			result.put("valid", FAILED);
+			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+		}
+	}
+    
+    
+    
+    @RequestMapping(path ="/updatePassword", method = RequestMethod.POST)
+	@ResponseBody
+	public String updatePassword(@RequestParam String textPwd,@RequestParam String textConfirmPwd,HttpServletRequest request,HttpServletResponse response){
+		Map<String,Object>result=new HashMap<String,Object>(1);
+		try {
+			UserInfo sessionUser=getUser();
+			if(sessionUser==null){
+				result.put("valid", FAILED);
+				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+			}
+			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
+				if(!textPwd.equals(textConfirmPwd)){
+					result.put("valid", FAILED);
+				}else{
+					String encodePwd=EncryptionUtil.md5(textPwd);
+					sessionUser.setPassword(encodePwd);
+					byte[] write = MessagePackUtils.getBytes(sessionUser);
+					jedis.hset(RedisConstants.userKey, sessionUser.getEmail().getBytes(), write);
+					result.put("valid", SUCCESS);
+				}
+			}
+			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+		} catch (Exception e) {
+			log.error("{}updatePassword err",textPwd,e);
+			result.put("valid", FAILED);
+			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+		}
+	}
 }

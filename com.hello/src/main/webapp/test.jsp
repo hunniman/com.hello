@@ -9,6 +9,7 @@
 <head>
 <jsp:include page="common/css.jsp" />
 <jsp:include page="common/js.jsp" />
+<jsp:include page="common/loading.jsp" />
 <script type="text/javascript">
 $(function(){
 	var oTimer=null;
@@ -61,6 +62,8 @@ $(function(){
 	$("#codeRefresh").bind("click",function(){
 		$(this).find("img").attr("src","generateCharCode?"+Math.random());
 	});
+	
+	Ladda.bind('div:not(.progress-demo) button');
 	
 });
 
@@ -133,6 +136,10 @@ $(function(){
            ${user.email}
       </c:forEach>
       
+      <button class="ladda-button" data-style="expand-right">
+		  <span class="ladda-label">Submit</span>
+	  </button>
+
       <br>
         <a id="codeRefresh" href="javascript:void(0);"><img alt="" src="generateCharCode"></a>
 		<footer>

@@ -10,6 +10,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.hello.common.Constants;
+import com.hello.model.UserInfo;
+
 /**
  * 基础控制controller
  */
@@ -65,5 +68,33 @@ public class BaseController {
     /**AJAX输出json，返回null**/
     public String ajaxJson(String json, HttpServletResponse response) {
         return ajax(json, "application/json", response);
+    }
+    
+    /**
+     * 获取UserInfo
+     * @return
+     */
+    public UserInfo getUser(){
+    	Object user=request.getSession().getAttribute(Constants.USER_SESSION);
+    	if(user==null)
+    		return null;
+    	else 
+    		return (UserInfo)user;
+    }
+    
+    /**
+     * 返回session 的user
+     * @param user
+     * @return
+     */
+    public UserInfo generalSessinonUser(UserInfo user){
+    	UserInfo userReturn=new UserInfo();
+    	userReturn.setEmail(user.getEmail());
+		userReturn.setHeaderImage(user.getHeaderImage());
+		userReturn.setGender(user.getGender());
+		userReturn.setIsActive(user.getIsActive());
+		userReturn.setUserName(user.getUserName());
+		userReturn.setContract(user.getContract());
+		return userReturn;
     }
 }

@@ -1,19 +1,29 @@
 $(function() {
+	    var loading=Ladda.create(document.querySelector('#btnReg'));
 		$("#btnReg").bind("click",function(){
 		   $('#regForm').bootstrapValidator('validate');
 		   if($('#regForm').data('bootstrapValidator').isValid()){
+			   loading.start();
 			   $.ajax({
 			        type: "post",
 			        dataType: "json",
 			        url: "doSignUp",
 			        data: $('#regForm').serialize(),
 			        success: function(data) {
-			        	alert(data);
+			        	loading.stop();
+			        	if(data.valid==="success"){
+			        		toastr.success('注册成功');
+			        	}else{
+			        		toastr.error('注册失败');
+			        	}
 			        },
 			        error: function(err) {
-			        	alert(err);
+			        	loading.stop();
+			        	toastr.error('注册失败');
 			        }
 			    });
+		   }else{
+			   loading.stop();
 		   }
 		});
 		
@@ -81,4 +91,5 @@ $(function() {
 	            }
 	        }
 	    });
+		
 	});

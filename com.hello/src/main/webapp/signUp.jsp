@@ -10,6 +10,7 @@
 <jsp:include page="common/css.jsp" />
 <jsp:include page="common/js.jsp" />
 <jsp:include page="common/validator.jsp" />
+<jsp:include page="common/loading.jsp" />
 
 <script src="resource/js/reg.js"></script>
 </head>
@@ -45,10 +46,10 @@
 				</div>
 				<div class="col-sm-2">
 				   <div style="text-align: right;">
-					<button type="button" id="btnReg" class="btn btn-primary">注册</button>
-					<a href="#" class="btn btn-primary ladda-button" data-style="expand-left">
-						  <span class="ladda-label">expand-left</span>
-					</a> 
+<!-- 					<button type="button" id="btnReg" class="btn btn-primary">注册</button> -->
+					 <button id="btnReg" class="btn btn-primary ladda-button" data-style="expand-right">
+						  <span class="ladda-label">注册</span>
+					 </button>
 				   </div>
 				</div>
 			</div>
