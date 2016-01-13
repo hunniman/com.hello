@@ -18,6 +18,7 @@ import msgPackageTest.MyMessage;
 import msgPackageTest.ObjectTemplate;
 import net.coobird.thumbnailator.Thumbnails;
 
+import org.apache.commons.lang3.StringUtils;
 import org.msgpack.MessagePack;
 import org.msgpack.template.Templates;
 import org.slf4j.Logger;
@@ -150,6 +151,13 @@ public class UserController extends BaseController {
 		return "signUp"; 
 	}
 	
+	
+	@RequestMapping("/login")
+	public String  login(){
+		return "login"; 
+	}
+	
+	
 	@RequestMapping("/checkEmail")
 	@ResponseBody
 	public String checkEmail(@RequestParam String email,HttpServletResponse response){
@@ -196,6 +204,35 @@ public class UserController extends BaseController {
 			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
 		}
 	}
+	
+	
+	
+	@RequestMapping(path ="/doLogin", method = RequestMethod.POST)
+	@ResponseBody
+	public String doLogin(@RequestParam String email,@RequestParam String textPwd,HttpServletRequest request,HttpServletResponse response){
+		Map<String,Object>result=new HashMap<String,Object>(1);
+		try {
+			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
+					String encodePwd=EncryptionUtil.md5(textPwd);
+					byte[] hget = jedis.hget(RedisConstants.userKey, email.getBytes());
+					UserInfo user = MessagePackUtils.byte2Object(hget, UserInfo.class);
+					if(user==null){
+						result.put("valid", FAILED);
+					}else if(!StringUtils.equals(encodePwd, user.getPassword())){
+						result.put("valid", FAILED);
+					}else{
+						result.put("valid", SUCCESS);
+						request.getSession().setAttribute(Constants.USER_SESSION,generalSessinonUser(user));
+					}
+			}
+			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+		} catch (Exception e) {
+			log.error("{} {} doLogin",email,textPwd,e);
+			result.put("valid", FAILED);
+			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+		}
+	}
+	
 	
 	@RequestMapping(path ="/doActivity", method = RequestMethod.GET)
 	public ModelAndView doActivity(@RequestParam String token,HttpServletRequest request){
