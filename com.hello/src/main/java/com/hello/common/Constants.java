@@ -63,4 +63,25 @@ public class Constants {
 		new FusysConfig();
 		UPLOAD_FILE_PATH = FusysConfig.getUploadFilePath();
 	}
+	
+	/**
+	 * 房子照片缓存文件夹
+	 */
+	public static final String HOURSEUPLOADCACHE="hourseUploadCache";
+	
+	/**
+	 * 房子照片真正文件夹
+	 */
+	public static final String HOURSEIMAGE="hourseImage";
+	
+	
+	/**
+	 * 头像照片缓存文件夹
+	 */
+	public static final String HEADERCACHE="headerCache";
+	
+	/**
+	 * 头像照片缓存文件夹
+	 */
+	public static final String HEADERIMAGE="headerImage";
 }

@@ -5,7 +5,7 @@ import org.msgpack.annotation.Message;
 @Message 
 public class UserInfo {
 
-	private int id;
+	private String id;
 	
 	private String email;
 	
@@ -98,13 +98,16 @@ public class UserInfo {
 		this.loginTime = loginTime;
 	}
 
-	public int getId() {
+	/**
+	 * @return the id
+	 */
+	public String getId() {
 		return id;
 	}
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(int id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	/**
@@ -158,9 +161,10 @@ public class UserInfo {
 	}
 	
 	
-	public UserInfo(String email, String password, String userName,
+	public UserInfo(String id,String email, String password, String userName,
 			int createTime, int loginTime, String contract) {
 		super();
+		this.id=id;
 		this.email = email;
 		Password = password;
 		this.userName = userName;

@@ -103,7 +103,6 @@ var doActivity=function(){
 				
 				var jcropArea="<img src="+a+" id='target' />";
 				$(jcropArea).appendTo($("#rcropArea"));
-				$("#myModal img").attr("src",a);
 				$("#target").attr("src",a);
 				$("#captureArea").show();
 				if(jcrop_api!==null){
