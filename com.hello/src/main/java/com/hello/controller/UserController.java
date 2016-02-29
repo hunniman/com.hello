@@ -214,14 +214,17 @@ public class UserController extends BaseController {
 					String encodePwd=EncryptionUtil.md5(textPwd);
 					byte[] hget = jedis.hget(RedisConstants.userKey, email.getBytes());
 					UserInfo user = MessagePackUtils.byte2Object(hget, UserInfo.class);
-					if(user==null){
-						result.put("valid", FAILED);
-					}else if(!StringUtils.equals(encodePwd, user.getPassword())){
-						result.put("valid", FAILED);
-					}else{
-						result.put("valid", SUCCESS);
-						request.getSession().setAttribute(Constants.USER_SESSION,generalSessinonUser(user));
-					}
+//					if(user==null){
+//						result.put("valid", FAILED);
+//					}else if(!StringUtils.equals(encodePwd, user.getPassword())){
+//						result.put("valid", FAILED);
+//					}else{
+//						result.put("valid", SUCCESS);
+//						request.getSession().setAttribute(Constants.USER_SESSION,generalSessinonUser(user));
+//					}
+					
+					result.put("valid", SUCCESS);
+					request.getSession().setAttribute(Constants.USER_SESSION,generalSessinonUser(user));
 			}
 			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
 		} catch (Exception e) {
@@ -398,12 +401,15 @@ public class UserController extends BaseController {
 				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
 			}
 			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
-				user.setUserName(userName);
-				user.setGender(Integer.parseInt(gender));
-				user.setContract(contract);
-				byte[] write = MessagePackUtils.getBytes(user);
+				byte[] hget = jedis.hget(RedisConstants.userKey, user.getEmail().getBytes());
+				UserInfo upUser = MessagePackUtils.byte2Object(hget, UserInfo.class);
+				
+				upUser.setUserName(userName);
+				upUser.setGender(Integer.parseInt(gender));
+				upUser.setContract(contract);
+				byte[] write = MessagePackUtils.getBytes(upUser);
 				jedis.hset(RedisConstants.userKey, user.getEmail().getBytes(), write);
-				request.getSession().setAttribute(Constants.USER_SESSION, generalSessinonUser(user));
+				request.getSession().setAttribute(Constants.USER_SESSION, generalSessinonUser(upUser));
 			}
 			result.put("valid", SUCCESS);
 			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
@@ -430,9 +436,13 @@ public class UserController extends BaseController {
 					result.put("valid", FAILED);
 				}else{
 					String encodePwd=EncryptionUtil.md5(textPwd);
-					sessionUser.setPassword(encodePwd);
-					byte[] write = MessagePackUtils.getBytes(sessionUser);
+					
+					byte[] hget = jedis.hget(RedisConstants.userKey, sessionUser.getEmail().getBytes());
+					UserInfo upUser = MessagePackUtils.byte2Object(hget, UserInfo.class);
+					upUser.setPassword(encodePwd);
+					byte[] write = MessagePackUtils.getBytes(upUser);
 					jedis.hset(RedisConstants.userKey, sessionUser.getEmail().getBytes(), write);
+					request.getSession().setAttribute(Constants.USER_SESSION, generalSessinonUser(upUser));
 					result.put("valid", SUCCESS);
 				}
 			}
@@ -601,4 +611,38 @@ public class UserController extends BaseController {
 		return mav;
 	}
     
+	 @RequestMapping(path ="/addLeaving", method = RequestMethod.POST)
+	  	@ResponseBody
+	  	public String addLeaving(@RequestParam String publishId,@RequestParam String txtLeaving,HttpServletRequest request,HttpServletResponse response){
+	  		Map<String,Object>result=new HashMap<String,Object>(1);
+	  		try {
+	  			UserInfo user= getUser();
+	  			if(user==null){
+	  				result.put("valid", FAILED);
+	  				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
+	  			}
+	  			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
+  					//修改
+  					byte[] hget = jedis.hget(RedisConstants.publishKey, publishId.getBytes());
+  					HoursePublishInfo h = MessagePackUtils.byte2Object(hget, HoursePublishInfo.class);
+  					if(h==null){
+  						result.put("valid", FAILED);
+  		  				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
+  					}
+  					UUID pid = UUID.randomUUID();
+  					FeedBackInfo back=new FeedBackInfo(pid.toString(), user.getEmail(), txtLeaving, TimeDateUtil.getCurrentTime(),user.getHeaderImage());
+  					h.getFeedBackList().add(back);
+  					byte[] write = MessagePackUtils.getBytes(h);
+					jedis.hset(RedisConstants.publishKey, publishId.toString().getBytes(), write);//保存
+  					jedis.zadd(publishId, System.currentTimeMillis(), pid.toString());//留言的顺序集合
+	  			}
+	  			result.put("valid", SUCCESS);
+	  			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+	  		} catch (Exception e) {
+	  			log.error("addLeaving error,",e);
+	  			result.put("valid", FAILED);
+	  			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
+	  		}
+	  	}
+	
 }

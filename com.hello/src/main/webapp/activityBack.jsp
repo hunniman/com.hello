@@ -15,7 +15,7 @@
 <script type="text/javascript">
    $(function(){
 	   setTimeout(function(){
-		   window.location.href="<%=request.getContextPath()%>/index";
+		   window.location.href="<%=request.getContextPath()%>/baseInfo";
 	   }, 1000);
    });
 </script>

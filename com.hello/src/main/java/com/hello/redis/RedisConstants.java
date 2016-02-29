@@ -10,8 +10,11 @@ public class RedisConstants {
 	
 	public static final String publicOrderKey;
 	
-    //用户和留言的映射<email,publishId>
+    //用户和发布的房子信息的映射<email,publishId>
 	public static final String emailPublishKey;
+	
+	//用户和发布的留言信息的映射<publishId,backId>
+	public static final String publicIdBackIdKey="publicIdBackIdKey";
 	
 	static{
 		userKey="userKey".getBytes();
