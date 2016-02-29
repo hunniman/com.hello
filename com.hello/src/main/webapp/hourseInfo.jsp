@@ -13,15 +13,27 @@
 <%-- <jsp:include page="common/jcrop.jsp" /> --%>
 <jsp:include page="common/progressbar.jsp" />
 <jsp:include page="common/loading.jsp" />
+
+<script src="<%=request.getContextPath()%>/resource/js/hourseDetial.js"></script>
 <style type="text/css">
  .img-responsive {
   display: block;
   height: auto;
   max-width: 100%;
 }
+.bs-example {
+	margin-left: 0;
+	margin-right: 0;
+	background-color: #fff;
+	border: 1px solid  #ddd;
+	border-radius: 4px 4px 0 0;
+	box-shadow: none;
+	padding: 5px;
+}
 </style>
 </head>
 <body>
+	<input type="hidden" id="basePath" value="<%=request.getContextPath()%>"/>
     <jsp:include page="common/header.jsp" />
         <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -61,6 +73,47 @@
 						  </li>
 					  </c:if>
 				</ul>
+				<div class="bs-example">
+				    <ul class="media-list">
+				    	<li class="media"> <a class="pull-left" href="#"> <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${sessionScope.USER_SESSION.headerImage}" style="width: 50px; height:50px;"> </a>
+			              <div class="media-body">
+			                 <form id="hourseDetailForm" class="form-horizontal" role="form">
+			                        <input type="hidden" name="publishId" value="${hoursePublishInfo.id}"/>
+			                 		<textarea id="txtLeaving" rows="5" cols="28" class="form-control" name="txtLeaving"></textarea>
+			                 </form>
+			                 <div style="text-align: right;">
+				                 <button id="btnLeaving" class="btn btn-default ladda-button" type="button" data-style="expand-right" type="button">
+			                          <span class="ladda-label">留言</span>
+			                     </button>
+			                 </div>
+			              </div>
+			            </li>
+			            <hr>
+			            <c:forEach var="back" items="${hoursePublishInfo.feedBackList}">
+<!-- 				            <li class="media"> -->
+<!-- 				              <a class="pull-left" href="#">  -->
+<%-- 				           		 <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${back.userHeader}" style="width: 50px; height: 50px;">  --%>
+<!-- 				              </a> -->
+<!-- 				              <div class="media-body"> -->
+<!-- 				                <p> -->
+<%-- 				                   ${back.message} --%>
+<!-- 				                </p> -->
+<!-- 				              </div> -->
+<!-- 				            </li> -->
+				            <c:if test="${back.userEmail==sessionScope.USER_SESSION.email}">
+					            <li class="media"> <a class="pull-right" href="#">
+					           		 <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${back.userHeader}" style="width: 50px; height: 50px;">  
+					            </a>
+					             <div class="media-body" style="text-align: right;">
+					                ${back.message}
+					             </div>
+					            </li>
+					            <hr/>
+				            </c:if>
+				            
+			            </c:forEach>
+			        </ul>
+				</div>
               </div>
         </div>
     
