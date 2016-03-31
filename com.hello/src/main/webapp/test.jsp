@@ -127,6 +127,7 @@ $(function(){
 	           	 </c:if>
 	    </c:forEach>
 	</div>
+	
 	<!-- /container -->
 
 </body>
