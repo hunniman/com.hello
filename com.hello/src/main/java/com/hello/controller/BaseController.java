@@ -40,6 +40,9 @@ public class BaseController {
 	/** 失败页面**/
 	protected final static String FAILED = "failed";
 	
+	/** 没有登录**/
+	protected final static String NOTAUTH = "auth";
+	
 	@Autowired  
 	protected  HttpServletRequest request;
 	
@@ -94,6 +97,7 @@ public class BaseController {
 		userReturn.setGender(user.getGender());
 		userReturn.setIsActive(user.getIsActive());
 		userReturn.setUserName(user.getUserName());
+		userReturn.setId(user.getId());
 		userReturn.setContract(user.getContract());
 		return userReturn;
     }

@@ -8,6 +8,8 @@ import org.msgpack.annotation.Message;
 @Message 
 public class FeedBackInfo {
 	private String id;
+	
+	private String userId;
 
 	private String userEmail;
 	
@@ -15,10 +17,24 @@ public class FeedBackInfo {
 
 	private String message;
 
-	private int createTime;
+	private long createTime;
 
 	private List<FeedBackInfo> leaving;
 	
+
+	/**
+	 * @return the userId
+	 */
+	public String getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId the userId to set
+	 */
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
 	/**
 	 * @return the userHeader
@@ -79,18 +95,20 @@ public class FeedBackInfo {
 		this.message = message;
 	}
 
+
+	
+
 	/**
 	 * @return the createTime
 	 */
-	public int getCreateTime() {
+	public long getCreateTime() {
 		return createTime;
 	}
 
 	/**
-	 * @param createTime
-	 *            the createTime to set
+	 * @param createTime the createTime to set
 	 */
-	public void setCreateTime(int createTime) {
+	public void setCreateTime(long createTime) {
 		this.createTime = createTime;
 	}
 
@@ -114,13 +132,14 @@ public class FeedBackInfo {
 	}
 
 	public FeedBackInfo(String id, String userEmail, String message,
-			int createTime,String userHeader) {
+			long createTime,String userHeader,String userId) {
 		super();
 		this.id = id;
 		this.userEmail = userEmail;
 		this.message = message;
 		this.createTime = createTime;
 		this.userHeader=userHeader;
+		this.userId=userId;
 		this.leaving=new ArrayList<FeedBackInfo>();
 	}
 

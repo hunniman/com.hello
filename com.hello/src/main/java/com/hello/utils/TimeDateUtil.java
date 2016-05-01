@@ -11,4 +11,13 @@ public class TimeDateUtil {
 		return (int) (System.currentTimeMillis()/1000);
 	}
 	
+	public static long getCurrentTimeMillis(){
+		return System.currentTimeMillis();
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(getCurrentTime());
+		System.out.println((int)System.currentTimeMillis());
+	}
+	
 }

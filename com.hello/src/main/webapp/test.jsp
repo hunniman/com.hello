@@ -89,10 +89,13 @@ $(function(){
 	            	 <div class="row">
 	           </c:if>
 	           
-	           <div class="col-md-4" style="border:1px solid #08080">
-					 <a href="HourseDetail/${hourse.id}" target="_blank">
-					  	<img width="300px" height="200px" id="21099071" src="${hourse.imgData[0]}" alt="同德花园大型封闭小区  温馨两房  笋租  ">
-					  </a>
+	           <div class="col-md-4">
+	                 <div style="max-height: 300px; overflow-y:hidden;">
+						  <a href="HourseDetail/${hourse.id}" target="_blank">
+						  	<img  width="300px"  src="${hourse.imgData[0]}">
+<%-- 						    <span class="badge pull-left">${hourse.imgData.size()}</span> --%>
+						  </a>
+	                 </div>
 	 				 <h4>${hourse.title}</h4>
 				     <p>${hourse.address}</p>
 				     <p>${hourse.room}房${hourse.ting}厅      ${hourse.scare}平方</p>
@@ -113,15 +116,15 @@ $(function(){
 <!-- 						  </div> -->
 				     </div>
 				 </div>
+			     <c:if test="${count!=3&&index==list.size()}">
+			     	<hr>
+			       </div>
+			     </c:if>
 				 <c:if test="${count==3}">
 	           		<c:set value="0" var="count" />  
 	             	</div>
 	             	<hr>
 	           	 </c:if>
-<%-- 			     <c:if test="${count!=3&&index==list.size()}"> --%>
-<!-- 			     	<hr> -->
-<!-- 			       </div> -->
-<%-- 			     </c:if> --%>
 	    </c:forEach>
 	</div>
 	<!-- /container -->

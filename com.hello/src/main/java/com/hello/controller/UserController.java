@@ -185,6 +185,7 @@ public class UserController extends BaseController {
 					String activeCode=EncryptionUtil.encode(email);
 					UUID uuid = UUID.randomUUID();
 					UserInfo userInfo=new UserInfo(uuid.toString(),email, encodePwd, "", TimeDateUtil.getCurrentTime(), TimeDateUtil.getCurrentTime(), "");
+					userInfo.setHeaderImage(Constants.HEADERIMAGE+"/default.png");
 					byte[] write = MessagePackUtils.getBytes(userInfo);
 					jedis.hset(RedisConstants.userKey, email.getBytes(), write);
 					result.put("valid", SUCCESS);
@@ -522,7 +523,7 @@ public class UserController extends BaseController {
   		try {
   			UserInfo user= getUser();
   			if(user==null){
-  				result.put("valid", FAILED);
+  				result.put("valid", NOTAUTH);
   				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
   			}
   			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
@@ -546,12 +547,13 @@ public class UserController extends BaseController {
   				}
   				if(StringUtils.isBlank(publishId)){
   					UUID pid = UUID.randomUUID();
-  					HoursePublishInfo hourseInfo=new HoursePublishInfo(pid.toString(), title, room, ting, wei, scare, money, declare, contractPeople, phone, qq, weixin, imgList, TimeDateUtil.getCurrentTime(),floor,totalFloor,address);
+  					HoursePublishInfo hourseInfo=new HoursePublishInfo(pid.toString(), title, room, ting, wei, scare, money, declare, contractPeople, phone, qq, weixin, imgList, TimeDateUtil.getCurrentTime(),floor,totalFloor,address,user.getId());
   					hourseInfo.setUserEmail(user.getEmail());
   					jedis.zadd(user.getEmail(), TimeDateUtil.getCurrentTime(),  pid.toString());//用户对应 发布的id list
   					byte[] write = MessagePackUtils.getBytes(hourseInfo);
 					jedis.hset(RedisConstants.publishKey, pid.toString().getBytes(), write);//保存
 					jedis.zadd(RedisConstants.publicOrderKey, System.currentTimeMillis(), pid.toString());
+					jedis.zadd(user.getId(),  System.currentTimeMillis(),pid.toString());
   				}else{
   					//修改
   					byte[] hget = jedis.hget(RedisConstants.publishKey, publishId.getBytes());
@@ -599,26 +601,30 @@ public class UserController extends BaseController {
 				        byte[] userEnc = jedis.hget(RedisConstants.userKey, hoursePublishInfo.getUserEmail().getBytes());
 				        pUser= MessagePackUtils.byte2Object(userEnc,UserInfo.class);
 				        pUser=generalSessinonUser(pUser);
-				    	hoursePublishInfo.convertTime2Show();
 				    }
 			}
 		} catch (Exception e) {
 			log.error("test error,",e);
 		}
-		ModelAndView mav = new ModelAndView("hourseInfo"); 
-		mav.addObject("hoursePublishInfo", hoursePublishInfo);
-		mav.addObject("pUser", pUser);
-		return mav;
+		if(hoursePublishInfo==null){
+			return index();
+		}else{
+			ModelAndView mav = new ModelAndView("hourseInfo"); 
+			mav.addObject("hoursePublishInfo", hoursePublishInfo);
+			mav.addObject("pUser", pUser);
+			return mav;
+		}
 	}
     
-	 @RequestMapping(path ="/addLeaving", method = RequestMethod.POST)
+	    @RequestMapping(path ="/addLeaving", method = RequestMethod.POST)
 	  	@ResponseBody
 	  	public String addLeaving(@RequestParam String publishId,@RequestParam String txtLeaving,HttpServletRequest request,HttpServletResponse response){
 	  		Map<String,Object>result=new HashMap<String,Object>(1);
 	  		try {
+	  			FeedBackInfo back=null;
 	  			UserInfo user= getUser();
 	  			if(user==null){
-	  				result.put("valid", FAILED);
+	  				result.put("valid", NOTAUTH);
 	  				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
 	  			}
 	  			try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
@@ -630,13 +636,14 @@ public class UserController extends BaseController {
   		  				return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);	
   					}
   					UUID pid = UUID.randomUUID();
-  					FeedBackInfo back=new FeedBackInfo(pid.toString(), user.getEmail(), txtLeaving, TimeDateUtil.getCurrentTime(),user.getHeaderImage());
+  					back=new FeedBackInfo(pid.toString(), user.getEmail(), txtLeaving, TimeDateUtil.getCurrentTimeMillis(),user.getHeaderImage(),user.getId());
   					h.getFeedBackList().add(back);
   					byte[] write = MessagePackUtils.getBytes(h);
 					jedis.hset(RedisConstants.publishKey, publishId.toString().getBytes(), write);//保存
   					jedis.zadd(publishId, System.currentTimeMillis(), pid.toString());//留言的顺序集合
 	  			}
-	  			result.put("valid", SUCCESS);
+	  			String json = JsonUtil.object4Json(back);
+	  			result.put("valid", json);
 	  			return ajaxJson(JsonUtil.getJsonString4JavaPOJO(result), response);		
 	  		} catch (Exception e) {
 	  			log.error("addLeaving error,",e);
@@ -645,4 +652,37 @@ public class UserController extends BaseController {
 	  		}
 	  	}
 	
+	    
+	    @RequestMapping("/UserHourseList/{uid}")
+		public  ModelAndView  UserHourseList(@PathVariable("uid") String uid){
+			List<HoursePublishInfo> hoursePublishList =new ArrayList<HoursePublishInfo>();
+			UserInfo pUser=null;
+			try {
+				try (Jedis jedis = redisUtils.getJedisPool().getResource()) {
+					Long count=jedis.zcard(uid);
+					if(count!=null&&count>0){
+						Set<String> zrange = jedis.zrange(uid, 0, count);
+						HoursePublishInfo hoursePublishInfo=null;
+						for(String pid:zrange){
+							byte[] hget = jedis.hget(RedisConstants.publishKey, pid.getBytes());
+							hoursePublishInfo = MessagePackUtils.byte2Object(hget,HoursePublishInfo.class);
+						    hoursePublishInfo.convertTime2Show();
+						    hoursePublishList.add(hoursePublishInfo);
+						    if(pUser==null){
+						    	 byte[] userEnc = jedis.hget(RedisConstants.userKey, hoursePublishInfo.getUserEmail().getBytes());
+							     pUser= MessagePackUtils.byte2Object(userEnc,UserInfo.class);
+							     pUser=generalSessinonUser(pUser);
+						    }
+						}
+						
+					}
+				}
+			} catch (Exception e) {
+				log.error("UserHourseList error,",e);
+			}
+			ModelAndView mav = new ModelAndView("userHourseList"); 
+			mav.addObject("list", hoursePublishList);
+			mav.addObject("pUser", pUser);
+			return mav;
+		}
 }

@@ -20,10 +20,11 @@ import net.sf.json.util.CycleDetectionStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 
- * 创建人：fantasy <br>
- * 创建时间：2014-2-10 <br>
  * 功能描述： 处理json的工具类，负责json数据转换成java对象和java对象转换成json<br>
  */
 
@@ -31,6 +32,28 @@ public class JsonUtil {
 	
 	private static final Logger LOGGER=LoggerFactory.getLogger(JsonUtil.class);
 	
+	
+	 private static final ObjectMapper mapper = new ObjectMapper();  
+	 
+	 public static String object4Json(Object obj){
+		 try {
+			return mapper.writeValueAsString(obj);
+		} catch (JsonProcessingException e) {
+			LOGGER.error("object4Json error",e);
+			return "";
+		}  
+	 }
+	 
+	 public static <T> T string2Object(String s,Class<T>clas){
+		 try {
+			T readValue = mapper.readValue(s, clas);
+			return readValue;
+		} catch (Exception e) {
+			LOGGER.error("string2Object error",e);
+			return null;
+		}
+	 }
+	 
 	/**
 	 * 从一个JSON 对象字符格式中得到一个java对象
 	 * 

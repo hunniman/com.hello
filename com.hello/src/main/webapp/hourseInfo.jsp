@@ -3,6 +3,7 @@
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -34,6 +35,7 @@
 </head>
 <body>
 	<input type="hidden" id="basePath" value="<%=request.getContextPath()%>"/>
+	<input type="hidden" id="publishEmail" value="${hoursePublishInfo.userEmail}"/>
     <jsp:include page="common/header.jsp" />
         <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -50,7 +52,7 @@
 							        <div class="container">
 							             <p>${hoursePublishInfo.declare}</p>
 							             <c:forEach var="pic" items="${hoursePublishInfo.imgData}">
-							               <p><img src="<%=request.getContextPath()%>/${pic}" alt="房屋图片"/ class="img-responsive"></p>
+							               <p><img src="<%=request.getContextPath()%>/${pic}" alt="" class="img-responsive"></p>
 							             </c:forEach>
 							        </div>
 							    </div>
@@ -68,18 +70,32 @@
 					  <li class="list-group-item">发布时间：${hoursePublishInfo.showDay}</li>
 					  <c:if test="${pUser.headerImage.length()>0}">
 						  <li class="list-group-item">
-						 	 <img  class="img-thumbnail" alt="我是头像" src="<%=request.getContextPath()%>/${pUser.headerImage}" style="width: 50px; height: 50px;">
-						 	 ${pUser.userName}
+						     <a href="<%=request.getContextPath()%>/UserHourseList/${hoursePublishInfo.userId}">
+							 	 <img  class="img-thumbnail" alt="" src="<%=request.getContextPath()%>/${pUser.headerImage}" style="width: 50px; height: 50px;">
+							 	 ${pUser.userName}
+						 	 </a>
 						  </li>
 					  </c:if>
 				</ul>
 				<div class="bs-example">
 				    <ul class="media-list">
-				    	<li class="media"> <a class="pull-left" href="#"> <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${sessionScope.USER_SESSION.headerImage}" style="width: 50px; height:50px;"> </a>
+				    	<li class="media"> 
+				    	 <a class="pull-left" href="#">
+				    	 		<img class="img-thumbnail" data-src="holder.js/64x64" alt="" 
+				    	 	      <c:choose>
+				    	 	         <c:when test="${sessionScope.USER_SESSION==null}">
+				    	 	         	src="<%=request.getContextPath()%>/headerImage/default.png"
+				    	 	         </c:when>
+				              		 <c:otherwise>
+				              			 src="<%=request.getContextPath()%>/${sessionScope.USER_SESSION.headerImage}"
+				              		 </c:otherwise>
+				    	 	      </c:choose>		
+				    	 		 style="width: 50px; height:50px;">
+				    	  </a>
 			              <div class="media-body">
 			                 <form id="hourseDetailForm" class="form-horizontal" role="form">
 			                        <input type="hidden" name="publishId" value="${hoursePublishInfo.id}"/>
-			                 		<textarea id="txtLeaving" rows="5" cols="28" class="form-control" name="txtLeaving"></textarea>
+			                 		<textarea id="txtLeaving" rows="5" cols="28" class="form-control" name="txtLeaving" maxLength="500"></textarea>
 			                 </form>
 			                 <div style="text-align: right;">
 				                 <button id="btnLeaving" class="btn btn-default ladda-button" type="button" data-style="expand-right" type="button">
@@ -88,30 +104,37 @@
 			                 </div>
 			              </div>
 			            </li>
-			            <hr>
-			            <c:forEach var="back" items="${hoursePublishInfo.feedBackList}">
-<!-- 				            <li class="media"> -->
-<!-- 				              <a class="pull-left" href="#">  -->
-<%-- 				           		 <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${back.userHeader}" style="width: 50px; height: 50px;">  --%>
-<!-- 				              </a> -->
-<!-- 				              <div class="media-body"> -->
-<!-- 				                <p> -->
-<%-- 				                   ${back.message} --%>
-<!-- 				                </p> -->
-<!-- 				              </div> -->
-<!-- 				            </li> -->
-				            <c:if test="${back.userEmail==sessionScope.USER_SESSION.email}">
-					            <li class="media"> <a class="pull-right" href="#">
-					           		 <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${back.userHeader}" style="width: 50px; height: 50px;">  
-					            </a>
-					             <div class="media-body" style="text-align: right;">
-					                ${back.message}
-					             </div>
-					            </li>
-					            <hr/>
-				            </c:if>
-				            
-			            </c:forEach>
+<!-- 			            <div style="max-height:400px;  overflow-y: scroll;"> -->
+				            <c:forEach var="back" items="${hoursePublishInfo.feedBackList}">
+					            <c:choose>
+					               <c:when test="${back.userEmail==hoursePublishInfo.userEmail}">
+						                <li class="media well">
+							                 <a class="pull-right" href="<%=request.getContextPath()%>/UserHourseList/${back.userId}">
+								           		 <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${back.userHeader}" style="width: 50px; height: 50px;">  
+								             </a>
+								             <div class="media-body" style="text-align: right;">
+								                 ${back.message}
+								                 <jsp:useBean id="dateValue" class="java.util.Date"/> 
+												 <jsp:setProperty name="dateValue" property="time" value="${back.createTime}"/> 
+								                 <p><span class="badge pull-right"><fmt:formatDate value="${dateValue}" pattern="yyyy-MM-dd HH:mm:ss"/></span></p>
+								             </div>
+							            </li>
+					               </c:when>
+					               <c:otherwise>
+							           <li class="media well">
+							              <a class="pull-left" href="<%=request.getContextPath()%>/UserHourseList/${back.userId}"> 
+							           		 <img class="img-thumbnail" data-src="holder.js/64x64" alt="64x64" src="<%=request.getContextPath()%>/${back.userHeader}" style="width: 50px; height: 50px;"> 
+							              </a>
+							              <div class="media-body">
+							                     ${back.message}
+												 <jsp:setProperty name="dateValue" property="time" value="${back.createTime}"/> 
+								                 <p><span class="badge pull-left"><fmt:formatDate value="${dateValue}" pattern="yyyy-MM-dd HH:mm:ss"/></span></p>
+							              </div>
+							            </li>
+					                </c:otherwise>
+					            </c:choose>
+				            </c:forEach>
+<!-- 			            </div> -->
 			        </ul>
 				</div>
               </div>

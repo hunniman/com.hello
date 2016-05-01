@@ -78,7 +78,10 @@ var publish=function(){
 			$("#editorFile").bind("change",function(){
 				self.uploadPhoto($(this).val(),"editorFile","hoursePhoUpload",function(a){
 					if(a==="failed"){
-						toastr.success('上传失败');
+						toastr.error('上传失败');
+						return;
+					}else if(a==="auth"){
+						toastr.warning('请登录！');
 						return;
 					}
 					self.initHeaderUpload();

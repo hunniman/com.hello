@@ -10,6 +10,8 @@ import com.hello.utils.TimeDateUtil;
 @Message 
 public class HoursePublishInfo {
 
+	private String userId;
+	
 	private String userEmail;
 	
 	private String id;
@@ -48,6 +50,22 @@ public class HoursePublishInfo {
 	
 	private String address;
 	
+	
+	
+	/**
+	 * @return the userId
+	 */
+	public String getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId the userId to set
+	 */
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+
 	/**
 	 * 显示日期
 	 */
@@ -371,7 +389,7 @@ public class HoursePublishInfo {
 	public HoursePublishInfo(String id, String title, int room, int ting,
 			int wei, int scare, int money, String declare,
 			String contractPeople, String phone, String qq, String weixin,
-			List<String> imgData, int createTime,int floor,int totalFloor,String address) {
+			List<String> imgData, int createTime,int floor,int totalFloor,String address,String userId) {
 		super();
 		this.id = id;
 		this.title = title;
@@ -391,6 +409,7 @@ public class HoursePublishInfo {
 		this.floor=floor;
 		this.totalFloor=totalFloor;
 		this.address=address;
+		this.userId=userId;
 	}
 	
 	public HoursePublishInfo(){
